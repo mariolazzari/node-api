@@ -1,0 +1,15 @@
+{
+  "name": "nodehttp",
+  "version": "1.0.0",
+  "description": "Learn http NodeJS module.",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
+}
