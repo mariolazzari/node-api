@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
 const colors = require("colors");
+const errorHanlder = require("./middleware/error");
 
 // load enviroment variables
 dotenv.config({ path: "./config/config.env" });
@@ -19,6 +20,8 @@ if (NODE_ENV === "development") {
 }
 //app.use(require("./middleware/logger"));
 app.use("/api/v1/bootcamps", require("./routes/bootcamps"));
+// error hanlder (AFTER routes definitions!)
+app.use(errorHanlder);
 
 const server = app.listen(PORT, () =>
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.yellow.bold)
