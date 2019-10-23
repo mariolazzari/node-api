@@ -20,6 +20,7 @@ if (NODE_ENV === "development") {
 }
 //app.use(require("./middleware/logger"));
 app.use("/api/v1/bootcamps", require("./routes/bootcamps"));
+app.use("/api/v1/courses", require("./routes/courses"));
 // error hanlder (AFTER routes definitions!)
 app.use(errorHanlder);
 
