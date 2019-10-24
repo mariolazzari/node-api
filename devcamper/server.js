@@ -4,6 +4,8 @@ const morgan = require("morgan");
 const connectDB = require("./config/db");
 const colors = require("colors");
 const errorHanlder = require("./middleware/error");
+const fileUpload = require("express-fileupload");
+const path = require("path");
 
 // load enviroment variables
 dotenv.config({ path: "./config/config.env" });
@@ -14,6 +16,10 @@ connectDB();
 // body parser
 const app = express();
 app.use(express.json());
+// file upload
+app.use(fileUpload());
+// static routes
+app.use(express.static(path.join(__dirname, "public")));
 
 if (NODE_ENV === "development") {
   app.use(morgan("dev"));

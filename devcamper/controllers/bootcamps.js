@@ -2,71 +2,12 @@ const Bootcamp = require("../models/Bootcamp");
 const asyncHandler = require("../middleware/async");
 const ErrorResponse = require("../utils/ErrorResponse");
 const geocoder = require("../utils/geocoder");
+const path = require("path");
 
 // get all bootcamps
-exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  // qeury to execute
-  let query;
-  // copy query string
-  let reqQuery = { ...req.query };
-
-  // fields to exclude from query string
-  const removeFields = ["select", "sort", "page", "limit"];
-  removeFields.forEach(f => delete reqQuery[f]);
-
-  // add $ operator to query string
-  let queryStr = JSON.stringify(reqQuery);
-  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-  // query to execute
-  query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
-
-  // select fields
-  if (req.query.select) {
-    const fields = req.query.select.split(",").join(" ");
-    query = query.select(fields);
-  }
-
-  // order by
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort("-createdAt");
-  }
-
-  // pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 100;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const total = await Bootcamp.countDocuments();
-  query = query.skip(startIndex).limit(limit);
-
-  // query execution
-  const bootcamps = await query;
-
-  // pagination results
-  const pagination = {};
-  if (endIndex < total) {
-    pagination.next = {
-      page: page + 1,
-      limit
-    };
-  }
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit
-    };
-  }
-
-  res.status(200).json({
-    success: true,
-    count: bootcamps.length,
-    pagination,
-    data: bootcamps
-  });
-});
+exports.getBootcamps = asyncHandler(async (req, res, next) =>
+  res.status(200).json(res.advancedResults)
+);
 
 // get  bootcamp
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
@@ -128,4 +69,55 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, netxt) => {
   res
     .status(200)
     .json({ success: true, count: bootcamps.length, data: bootcamps });
+});
+
+// upload bootcamp photo
+exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  //const bootcamp = await Bootcamp.findByIdAndDelete(id); -> do not trigger pre remove!!!
+  const bootcamp = await Bootcamp.findById(id);
+  if (!bootcamp) {
+    return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
+  }
+
+  // check if file uploaded
+  if (!req.files) {
+    return next(new ErrorResponse("Please upload a file", 400));
+  }
+
+  // upload file settings
+  const { file } = req.files;
+  const { MAX_FILE_UPLOAD, FILE_UPLOAD_PATH } = process.env;
+
+  // check file type
+  if (!file.mimetype.startsWith("image")) {
+    return next(new ErrorResponse("Please upload an image file.", 400));
+  }
+
+  // check file size
+  if (file.size > MAX_FILE_UPLOAD) {
+    return next(
+      new ErrorResponse(
+        `Please upload an image less than ${MAX_FILE_UPLOAD}.`,
+        400
+      )
+    );
+  }
+
+  // rename uploaded file
+  const fileExt = path.parse(file.name).ext;
+  file.name = `photo_${bootcamp._id}${fileExt}`;
+
+  // move file to upload path
+  file.mv(`${FILE_UPLOAD_PATH}/${file.name}`, async err => {
+    // check for errors
+    if (err) {
+      console.error(err);
+      return next(new ErrorResponse("File upload error.", 500));
+    }
+
+    // save file into database
+    await Bootcamp.findByIdAndUpdate(id, { photo: file.name });
+    res.status(200).json({ success: true, data: file.name });
+  });
 });
