@@ -6,6 +6,7 @@ const colors = require("colors");
 const errorHanlder = require("./middleware/error");
 const fileUpload = require("express-fileupload");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 
 // load enviroment variables
 dotenv.config({ path: "./config/config.env" });
@@ -13,11 +14,13 @@ const { NODE_ENV, PORT } = process.env;
 
 // database connection
 connectDB();
-// body parser
+
+// express server
 const app = express();
+// middlewares
 app.use(express.json());
-// file upload
 app.use(fileUpload());
+app.use(cookieParser());
 // static routes
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -27,6 +30,7 @@ if (NODE_ENV === "development") {
 //app.use(require("./middleware/logger"));
 app.use("/api/v1/bootcamps", require("./routes/bootcamps"));
 app.use("/api/v1/courses", require("./routes/courses"));
+app.use("/api/v1/auth", require("./routes/auth"));
 // error hanlder (AFTER routes definitions!)
 app.use(errorHanlder);
 
