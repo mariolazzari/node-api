@@ -1,7 +1,18 @@
 const http = require("http");
 
 const server = http.createServer((req, res) => {
-  //console.log(req.method);
+  //console.log(req);
+
+  let body = [];
+  req
+    .on("data", chunk => {
+      body.push(chunk);
+    })
+    .on("end", () => {
+      body = Buffer.concat(body);
+      console.log(body.toString());
+    });
+
   res.statusCode = 200;
   res.setHeader("X-Powerd-By", "NodeJS");
   res.setHeader("Content-Type", "application/json");
@@ -10,6 +21,7 @@ const server = http.createServer((req, res) => {
     { id: 2, text: "test 2" },
     { id: 3, text: "test 3" }
   ];
+
   //res.write("<h1>Ciao</h1>");
   res.end(
     JSON.stringify({
