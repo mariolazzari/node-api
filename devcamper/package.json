@@ -21,7 +21,7 @@
     "express": "^4.17.3",
     "express-fileupload": "^1.1.9",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^5.9.9",
+    "mongoose": "^5.13.15",
     "morgan": "^1.10.0",
     "node-geocoder": "^3.27.0",
     "slugify": "^1.4.0"
