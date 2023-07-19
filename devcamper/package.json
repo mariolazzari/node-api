@@ -23,7 +23,7 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^5.13.15",
     "morgan": "^1.10.0",
-    "node-geocoder": "^3.27.0",
+    "node-geocoder": "^4.2.0",
     "slugify": "^1.4.0"
   }
 }
